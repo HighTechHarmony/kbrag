@@ -27,6 +27,7 @@ def process_input():
                     user_text,
                     k=st.session_state["retrieval_k"],
                     score_threshold=st.session_state["retrieval_threshold"],
+                    verbosity = st.session_state["verbosity"]
                 )
             except ValueError as e:
                 agent_text = str(e)
@@ -86,15 +87,36 @@ def page():
         "Similarity Score Threshold", min_value=0.0, max_value=1.0, value=0.2, step=0.05
     )
 
+    st.session_state["verbosity"] = st.slider(
+        "Verbosity (target # of sentences)", min_value=1, max_value=10, value=3, step=1
+    )
+
     # Display messages and text input
     display_messages()
     st.text_input("Message", key="user_input", on_change=process_input)
 
-    # Clear chat
-    if st.button("Clear Chat"):
-        st.session_state["messages"] = []
-        st.session_state["assistant"].clear()
+    # # Clear all
+    # if st.button("Clear Storage"):
+    #     st.session_state["messages"] = []
+    #     st.session_state["assistant"].clear()
+        
+    # # Clear chat
+    # if st.button("Clear Chat Only"):
+    #     st.session_state["messages"] = []
+        
 
+    # Clear all and Clear chat buttons side by side
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("Clear Chat Only"):
+            st.session_state["messages"] = []
+
+    with col2:
+        if st.button("Clear Storage"):
+            st.session_state["messages"] = []
+            st.session_state["assistant"].clear()            
+    
 
 if __name__ == "__main__":
     page()

@@ -56,7 +56,7 @@ To use the specified embedding and LLM models (`mxbai-embed-large` and `deepseek
 
 ```bash
 ollama pull mxbai-embed-large
-ollama pull deepseek-r1:latest
+ollama pull deepseek-r1:7b
 ```
 
 ---
@@ -107,12 +107,14 @@ streamlit run app.py
 You can modify the following parameters in `rag.py` to suit your needs:
 
 1. **Models**:
+
    - Default LLM: `deepseek-r1:latest` (7B parameters)
    - Default Embedding: `mxbai-embed-large` (1024 dimensions)
    - Change these in the `ChatPDF` class constructor or when initializing the class
    - Any Ollama-compatible model can be used by updating the `llm_model` parameter
 
 2. **Chunking Parameters**:
+
    - `chunk_size=1024` and `chunk_overlap=100`
    - Adjust for larger or smaller document splits
 
@@ -137,9 +139,11 @@ You can modify the following parameters in `rag.py` to suit your needs:
 ### Common Issues
 
 1. **Missing Models**:
+
    - Ensure you've pulled the required models using `ollama pull`.
 
 2. **Vector Store Errors**:
+
    - Delete the `chroma_db/` directory if you encounter dimensionality errors:
      ```bash
      rm -rf chroma_db/
@@ -166,7 +170,7 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Acknowledgments
 
+- [ChatPDF with DeepSeek R1](https://github.com/paquino11/chatpdf-rag-deepseek-r1)
 - [LangChain](https://github.com/hwchase17/langchain)
 - [Streamlit](https://github.com/streamlit/streamlit)
 - [Ollama](https://ollama.ai/)
-
