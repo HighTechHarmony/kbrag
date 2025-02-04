@@ -12,8 +12,27 @@ st.set_page_config(page_title="RAG with Local DeepSeek R1")
 def display_messages():
     """Display the chat history."""
     st.subheader("Chat History")
+
+
+    # There is a method called st.expander that should encapsulate the part of the message that is encapsulated
+    # in <think></think> tags. 
+
     for i, (msg, is_user) in enumerate(st.session_state["messages"]):
-        message(msg, is_user=is_user, key=str(i))
+        if "<think>" in msg:
+            # Extract the hidden and visible parts
+            hidden_text = msg.split("<think>")[1].split("</think>")[0]
+            visible_text = msg.split("</think>")[1]
+
+            # Display hidden text with st.expander (if you still want it):
+            with st.expander(f"See hidden thoughts Part {i}"):
+                message(hidden_text, is_user=is_user, key=f"hidden_{i}")
+
+            # Display the visible text without st.expander, using a unique key
+            message(visible_text, is_user=is_user, key=f"visible_{i}")
+        else:
+            message(msg, is_user=is_user, key=f"default_{i}")
+
+
     st.session_state["thinking_spinner"] = st.empty()
 
 
