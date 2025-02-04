@@ -88,22 +88,12 @@ def page():
     )
 
     st.session_state["verbosity"] = st.slider(
-        "Verbosity (target # of sentences)", min_value=1, max_value=10, value=3, step=1
+        "Verbosity (target # of sentences, 0 = no limit)", min_value=0, max_value=10, value=0, step=1
     )
 
     # Display messages and text input
     display_messages()
     st.text_input("Message", key="user_input", on_change=process_input)
-
-    # # Clear all
-    # if st.button("Clear Storage"):
-    #     st.session_state["messages"] = []
-    #     st.session_state["assistant"].clear()
-        
-    # # Clear chat
-    # if st.button("Clear Chat Only"):
-    #     st.session_state["messages"] = []
-        
 
     # Clear all and Clear chat buttons side by side
     col1, col2 = st.columns(2)
@@ -115,7 +105,20 @@ def page():
     with col2:
         if st.button("Clear Storage"):
             st.session_state["messages"] = []
-            st.session_state["assistant"].clear()            
+            st.session_state["assistant"].clear()
+            
+
+    # Display the contents of the vector store
+    if st.button("View samples in Vector Store"):
+        st.write("Excerpts of data in Vector Store:")
+
+        # Call the vs_list method and capture the return value
+        document_sources = st.session_state["assistant"].vs_samples()
+
+        # Print the list of document sources
+        st.write(document_sources)
+        
+
     
 
 if __name__ == "__main__":

@@ -27,6 +27,21 @@ class ChatPDF:
         self.model = ChatOllama(model=llm_model)
         self.embeddings = OllamaEmbeddings(model=embedding_model)
         self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=100)
+
+        template_temp = """
+            You are a helpful assistant answering questions based on the uploaded document.
+            Context:
+            {context}
+            
+            Question:
+            {question}
+            """
+
+        # if (self.verbosity > 0):
+        #     template_temp += "Answer concisely and accurately in {verbosity} sentences or less."
+
+        self.prompt = ChatPromptTemplate.from_template(template_temp)
+        
         # self.prompt = ChatPromptTemplate.from_template(
         #     """
         #     You are a helpful assistant answering questions based on the uploaded document.
@@ -35,23 +50,9 @@ class ChatPDF:
             
         #     Question:
         #     {question}
-            
-        #     Answer concisely and accurately in three sentences or less.
         #     """
-        # )
-
-        self.prompt = ChatPromptTemplate.from_template(
-            """
-            You are a helpful assistant answering questions based on the uploaded document.
-            Context:
-            {context}
             
-            Question:
-            {question}
-            
-            Answer concisely and accurately in {verbosity} sentences or less.
-            """
-        )
+        
 
             
         
@@ -64,6 +65,14 @@ class ChatPDF:
         """
         logger.info(f"Starting ingestion for file: {pdf_file_path}")
         docs = PyPDFLoader(file_path=pdf_file_path).load()
+
+        # Add filename to metadata for each doc
+        for doc in docs:
+            print (f"Adding source to metadata: ", pdf_file_path)
+            doc.metadata["source"] = pdf_file_path
+            doc.metadata["firstline"] = doc.page_content.split("\n")[0]
+    
+
         chunks = self.text_splitter.split_documents(docs)
         chunks = filter_complex_metadata(chunks)
 
@@ -74,7 +83,23 @@ class ChatPDF:
         )
         logger.info("Ingestion completed. Document embeddings stored successfully.")
 
-    def ask(self, query: str, k: int = 5, score_threshold: float = 0.2, verbosity: int = 3):
+    def vs_samples(self):
+        """
+        List the data in the vector store.
+        """
+        if not self.vector_store:
+            raise ValueError("No vector store found. Please ingest a document first.")
+
+        # Extract 'source' from document metadata
+        metadata_list = self.vector_store.get()["metadatas"]
+        return list({doc["firstline"] for doc in metadata_list if "firstline" in doc})
+    
+        
+    
+  
+
+
+    def ask(self, query: str, k: int = 5, score_threshold: float = 0.2, verbosity: int = 0):
         """
         Answer a query using the RAG pipeline.
         """
@@ -98,6 +123,9 @@ class ChatPDF:
             "question": query,
             "verbosity": verbosity
         }
+
+        if (verbosity > 0):
+            self.prompt = ChatPromptTemplate.append("Answer concisely and accurately in {verbosity} sentences or less.")
 
         # Build the RAG chain
         chain = (
